@@ -9,7 +9,6 @@ export function createATA(onDownloadFile: (code: string, path: string) => void) 
     logger: console,
     delegate: {
       receivedFile: (code, path) => {
-        console.log(path);
         onDownloadFile(code, path);
       }
     },

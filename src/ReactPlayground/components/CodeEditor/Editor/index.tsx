@@ -32,7 +32,6 @@ export default function Editor(props: Props) {
     });
 
     const ata = createATA((code, path) => {
-      console.log(path);
       monaco.languages.typescript.typescriptDefaults.addExtraLib(
         code,
         `file://${path}`

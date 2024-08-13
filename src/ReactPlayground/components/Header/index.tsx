@@ -1,11 +1,19 @@
 import styles from "./index.module.scss";
 import logoSvg from "./icons/logo.svg"; // vite做的处理，引入 .svg 会返回它的路径
-import { MoonOutlined, SunOutlined } from "@ant-design/icons";
+import {
+  MoonOutlined,
+  SunOutlined,
+  ShareAltOutlined,
+  DownloadOutlined,
+} from "@ant-design/icons";
 import { useContext } from "react";
 import { PlaygroundContext } from "../../PlaygroundContext";
+import copy from "copy-to-clipboard";
+import { message } from "antd";
+import { downloadFiles } from "../../utils";
 
 export default function Header() {
-  const { theme, setTheme } = useContext(PlaygroundContext);
+  const { files, theme, setTheme } = useContext(PlaygroundContext);
   return (
     <div className={styles.header}>
       <div className={styles.logo}>
@@ -27,6 +35,22 @@ export default function Header() {
             onClick={() => setTheme("light")}
           />
         )}
+        <ShareAltOutlined
+          title="分享"
+          style={{ marginLeft: "10px" }}
+          onClick={() => {
+            copy(window.location.href); // 复制到剪贴板
+            message.success("分享链接已复制");
+          }}
+        />
+        <DownloadOutlined
+          title="下载"
+          style={{ marginLeft: "10px" }}
+          onClick={async () => {
+            await downloadFiles(files);
+            message.success("下载成功");
+          }}
+        />
       </div>
     </div>
   );
