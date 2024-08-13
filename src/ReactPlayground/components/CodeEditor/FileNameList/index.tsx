@@ -29,7 +29,7 @@ export default function FileNameList() {
     updateFileName(oldName, name);
   };
   const addTab = () => {
-    let name = `Comp${Math.random().toString().slice(2, 8)}.tsx`;
+    let name = `Comp${Math.random().toString().slice(2, 6)}.tsx`;
     addFile(name);
     setCreating(true);
   };

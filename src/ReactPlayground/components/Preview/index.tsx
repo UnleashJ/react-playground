@@ -1,9 +1,10 @@
-import { useContext, useEffect, useState } from "react";
-import { compile } from "./compiler";
+import { useContext, useEffect, useRef, useState } from "react";
+import CompileWorker from "./compiler.worker?worker";
 import { PlaygroundContext } from "../../PlaygroundContext";
 import iframeRaw from "./iframe.html?raw";
 import { IMPORT_MAP_FILE_NAME } from "../../files";
 import { Message } from "../Message";
+import { debounce } from "lodash-es";
 
 interface MessageData {
   data: {
@@ -29,25 +30,37 @@ export default function Preview() {
   const [compiledCode, setCompiledCode] = useState("");
   const [iframeUrl, setIframeUrl] = useState(getIframeUrl());
   const [error, setError] = useState("");
+  
+  // 接受iframe渲染报错的事件监听
   useEffect(() => {
-    window.addEventListener("message", hadnleMessage);
+    window.addEventListener("message", handleMessage);
     return () => {
-      window.removeEventListener("message", hadnleMessage);
+      window.removeEventListener("message", handleMessage);
     };
   }, []);
-
-  const hadnleMessage = (msg: MessageData) => {
+  const handleMessage = (msg: MessageData) => {
     const { type, message } = msg.data;
     if (type === "ERROR") {
       setError(message);
     }
   };
 
-  // 文件变化 重新编译
+  const compileWorkerRef = useRef<Worker>();
   useEffect(() => {
-    const result = compile(files);
-    setCompiledCode(result);
-  }, [files]);
+    if (!compileWorkerRef.current) {
+      compileWorkerRef.current = new CompileWorker();
+      compileWorkerRef.current.addEventListener("message", ({ data }) => {
+        if (data.type === "COMPILED_CODE") {
+          setCompiledCode(data.data);
+        }
+      });
+    }
+  }, []);
+
+  // 文件变化 重新编译
+  useEffect(debounce(() => {
+    compileWorkerRef.current?.postMessage(files)
+  }, 500), [files])
 
   // import-map.json文件变化，修改iframe文件内容
   useEffect(() => {
